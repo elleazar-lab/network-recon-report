@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Network Recon Report — {{ target }}</title>
+  <style>
+    body { font-family: -apple-system, Segoe UI, Roboto, sans-serif; margin: 40px; color: #222; }
+    h1 { border-bottom: 3px solid #2563eb; padding-bottom: 8px; }
+    .meta { color: #666; margin-bottom: 30px; }
+    .summary { display: flex; gap: 20px; margin: 20px 0 40px; }
+    .card { background: #f1f5f9; padding: 16px 24px; border-radius: 8px; }
+    .card .num { font-size: 28px; font-weight: bold; color: #2563eb; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 30px; }
+    th, td { border: 1px solid #e2e8f0; padding: 8px 12px; text-align: left; font-size: 14px; }
+    th { background: #f8fafc; }
+    .risk { background: #fef2f2; color: #b91c1c; font-weight: 600; }
+    .ok { color: #16a34a; }
+    .recommendation { font-size: 12px; color: #555; }
+    footer { margin-top: 40px; font-size: 12px; color: #888; border-top: 1px solid #e2e8f0; padding-top: 12px; }
+  </style>
+</head>
+<body>
+  <h1>Network Recon Report</h1>
+  <div class="meta">
+    Target: <strong>{{ target }}</strong> &nbsp;|&nbsp;
+    Generated: {{ generated_at }}
+  </div>
+
+  <div class="summary">
+    <div class="card"><div class="num">{{ host_count }}</div>Host(s)</div>
+    <div class="card"><div class="num">{{ port_count }}</div>Open Port(s)</div>
+    <div class="card"><div class="num">{{ risk_count }}</div>Risk Flag(s)</div>
+  </div>
+
+  {% for host in hosts %}
+  <h2>{{ host.host }}</h2>
+  {% if host.ports %}
+  <table>
+    <tr><th>Port</th><th>Service</th><th>Banner</th><th>Risk</th><th>Recommendation</th></tr>
+    {% for p in host.ports %}
+    <tr>
+      <td>{{ p.port }}/tcp</td>
+      <td>{{ p.service }}</td>
+      <td>{{ p.banner or '—' }}</td>
+      <td class="{{ 'risk' if p.risk_label else 'ok' }}">
+        {{ p.risk_label if p.risk_label else '—' }}
+        {% if p.risk_reason %}<div class="recommendation">{{ p.risk_reason }}</div>{% endif %}
+      </td>
+      <td class="recommendation">{{ p.recommendation or 'No specific action defined' }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p>No open ports found.</p>
+  {% endif %}
+  {% endfor %}
+
+  <footer>
+    Scanned a locally owned host only. Never scan systems you do not own
+    or have written permission to test.
+  </footer>
+</body>
+</html>
